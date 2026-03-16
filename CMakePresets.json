@@ -79,6 +79,43 @@
     },
 
     {
+      "name": "apm32f405",
+      "displayName": "APM32F405 (Cortex-M4)",
+      "inherits": "base",
+      "cacheVariables": { "BF_TARGET": "APM32F405" }
+    },
+    {
+      "name": "apm32f407",
+      "displayName": "APM32F407 (Cortex-M4)",
+      "inherits": "base",
+      "cacheVariables": { "BF_TARGET": "APM32F407" }
+    },
+    {
+      "name": "at32f435g",
+      "displayName": "AT32F435G (Cortex-M4, 1 MB)",
+      "inherits": "base",
+      "cacheVariables": { "BF_TARGET": "AT32F435G" }
+    },
+    {
+      "name": "at32f435m",
+      "displayName": "AT32F435M (Cortex-M4, 256 KB)",
+      "inherits": "base",
+      "cacheVariables": { "BF_TARGET": "AT32F435M" }
+    },
+    {
+      "name": "rp2350a",
+      "displayName": "RP2350A (Cortex-M33)",
+      "inherits": "base",
+      "cacheVariables": { "BF_TARGET": "RP2350A" }
+    },
+    {
+      "name": "rp2350b",
+      "displayName": "RP2350B (Cortex-M33)",
+      "inherits": "base",
+      "cacheVariables": { "BF_TARGET": "RP2350B" }
+    },
+
+    {
       "name": "matekf405te",
       "displayName": "MATEK F405-TE board config",
       "inherits": "base",
@@ -116,6 +153,12 @@
     { "name": "stm32h743",       "configurePreset": "stm32h743" },
     { "name": "stm32h750",       "configurePreset": "stm32h750" },
     { "name": "stm32h723",       "configurePreset": "stm32h723" },
+    { "name": "apm32f405",       "configurePreset": "apm32f405" },
+    { "name": "apm32f407",       "configurePreset": "apm32f407" },
+    { "name": "at32f435g",       "configurePreset": "at32f435g" },
+    { "name": "at32f435m",       "configurePreset": "at32f435m" },
+    { "name": "rp2350a",         "configurePreset": "rp2350a" },
+    { "name": "rp2350b",         "configurePreset": "rp2350b" },
     { "name": "matekf405te",     "configurePreset": "matekf405te" },
     { "name": "kakuteh7",        "configurePreset": "kakuteh7" },
     { "name": "stm32f405-debug", "configurePreset": "stm32f405-debug" },

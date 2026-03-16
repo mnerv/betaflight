@@ -68,3 +68,5 @@ CLAUDE.md
 .cache
 .tools
 build*/
+!src/main/build
+__cmake*

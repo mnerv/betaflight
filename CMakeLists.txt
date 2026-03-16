@@ -63,6 +63,24 @@ if(BF_CONFIG)
     endif()
 
     message(STATUS "BF_CONFIG=${BF_CONFIG} → BF_TARGET=${BF_TARGET}, HSE=${BF_HSE_VALUE} Hz")
+
+    # Auto-detect EXST / RAM_BASED from config.h storage defines (can be
+    # overridden on the command line if needed)
+    file(STRINGS "${_CONFIG_HDR}" _CFG_LINES)
+    foreach(_cl ${_CFG_LINES})
+        if(_cl MATCHES "#define[ \t]+(CONFIG_IN_EXTERNAL_FLASH|CONFIG_IN_MEMORY_MAPPED_FLASH)")
+            if(NOT BF_EXST)
+                set(BF_EXST TRUE CACHE BOOL "Auto-detected EXST from config.h" FORCE)
+                message(STATUS "Auto-detected EXST build (${CMAKE_MATCH_1})")
+            endif()
+        endif()
+        if(_cl MATCHES "#define[ \t]+CONFIG_IN_RAM")
+            if(NOT BF_RAM_BASED)
+                set(BF_RAM_BASED TRUE CACHE BOOL "Auto-detected RAM_BASED from config.h" FORCE)
+                message(STATUS "Auto-detected RAM_BASED build (CONFIG_IN_RAM)")
+            endif()
+        endif()
+    endforeach()
 endif()
 
 if(NOT BF_TARGET)
@@ -82,8 +100,9 @@ if(NOT _TARGET_MK_CANDIDATES)
 endif()
 list(GET _TARGET_MK_CANDIDATES 0 _TARGET_MK)
 
-# Parse TARGET_MCU and TARGET_MCU_FAMILY from target.mk
+# Parse TARGET_MCU, TARGET_MCU_FAMILY, and DEVICE_FLAGS from target.mk
 file(STRINGS "${_TARGET_MK}" _TARGET_MK_LINES)
+set(_RAW_DEVICE_FLAGS "")
 foreach(_line ${_TARGET_MK_LINES})
     if(_line MATCHES "TARGET_MCU[ \t]*:=[ \t]*(.+)")
         string(STRIP "${CMAKE_MATCH_1}" BF_TARGET_MCU)
@@ -91,7 +110,24 @@ foreach(_line ${_TARGET_MK_LINES})
     if(_line MATCHES "TARGET_MCU_FAMILY[ \t]*:=[ \t]*(.+)")
         string(STRIP "${CMAKE_MATCH_1}" BF_TARGET_MCU_FAMILY)
     endif()
+    if(_line MATCHES "DEVICE_FLAGS[ \t]*[+]?=[ \t]*(.+)")
+        string(STRIP "${CMAKE_MATCH_1}" _df)
+        string(APPEND _RAW_DEVICE_FLAGS " ${_df}")
+    endif()
 endforeach()
+
+# Expand $(TARGET_MCU) references and collect -D flags from DEVICE_FLAGS
+set(BF_TARGET_MK_DEVICE_FLAGS "")
+if(_RAW_DEVICE_FLAGS AND BF_TARGET_MCU)
+    string(REPLACE "$(TARGET_MCU)" "${BF_TARGET_MCU}" _RAW_DEVICE_FLAGS "${_RAW_DEVICE_FLAGS}")
+    string(REPLACE "$(MCU)" "${BF_TARGET_MCU}" _RAW_DEVICE_FLAGS "${_RAW_DEVICE_FLAGS}")
+    separate_arguments(_df_list UNIX_COMMAND "${_RAW_DEVICE_FLAGS}")
+    foreach(_flag ${_df_list})
+        if(_flag MATCHES "^-D")
+            list(APPEND BF_TARGET_MK_DEVICE_FLAGS "${_flag}")
+        endif()
+    endforeach()
+endif()
 
 if(NOT BF_TARGET_MCU OR NOT BF_TARGET_MCU_FAMILY)
     message(FATAL_ERROR "Could not parse TARGET_MCU / TARGET_MCU_FAMILY from ${_TARGET_MK}")
@@ -125,6 +161,12 @@ elseif(BF_TARGET_MCU_FAMILY STREQUAL "STM32H5")
     include("${BF_CMAKE_DIR}/stm32h5.cmake")
 elseif(BF_TARGET_MCU_FAMILY STREQUAL "STM32H7")
     include("${BF_CMAKE_DIR}/stm32h7.cmake")
+elseif(BF_TARGET_MCU_FAMILY STREQUAL "APM32F4")
+    include("${BF_CMAKE_DIR}/apm32f4.cmake")
+elseif(BF_TARGET_MCU_FAMILY STREQUAL "AT32F4")
+    include("${BF_CMAKE_DIR}/at32f4.cmake")
+elseif(BF_TARGET_MCU_FAMILY STREQUAL "RP2350")
+    include("${BF_CMAKE_DIR}/rp2350.cmake")
 else()
     message(FATAL_ERROR "Unsupported MCU family: ${BF_TARGET_MCU_FAMILY}")
 endif()
@@ -269,11 +311,12 @@ set_target_properties(${_ELF_NAME} PROPERTIES
 set(_INCLUDE_DIRS
     "${BF_SRC_DIR}"
     "${BF_LIB_DIR}/MAVLink"
-    "${BF_PLATFORM_DIR}/common/stm32"
     "${BF_PLATFORM_DIR}/${BF_TARGET_PLATFORM}/target/${BF_TARGET}"
     "${BF_OLC_DIR}"
     ${BF_PLATFORM_INCLUDE_DIRS}
 )
+# STM32/APM32/AT32 share common/stm32 drivers; each platform cmake adds it to
+# BF_PLATFORM_INCLUDE_DIRS, so no extra entry is needed here.
 
 if(BF_CONFIG)
     list(APPEND _INCLUDE_DIRS "${BF_CONFIG_DIR}/configs/${BF_CONFIG}")
@@ -284,12 +327,29 @@ if(BF_DSP_LIB_DIR AND EXISTS "${BF_DSP_LIB_DIR}/Include")
 endif()
 
 target_include_directories(${_ELF_NAME} PRIVATE ${_INCLUDE_DIRS})
+# Platform-specific SYSTEM includes suppress warnings from third-party headers
+if(BF_PLATFORM_SYSTEM_INCLUDE_DIRS)
+    target_include_directories(${_ELF_NAME} SYSTEM PRIVATE ${BF_PLATFORM_SYSTEM_INCLUDE_DIRS})
+endif()
 
 # ---------------------------------------------------------------------------
 # Compile definitions
 # ---------------------------------------------------------------------------
+# Split BF_DEVICE_FLAGS: -D... entries are definitions, everything else
+# (e.g. -finline-limit=20) is a compile option.
+set(_DEVICE_DEFS "")
+set(_DEVICE_COMPILE_OPTS "")
+foreach(_f ${BF_DEVICE_FLAGS})
+    if(_f MATCHES "^-D")
+        list(APPEND _DEVICE_DEFS "${_f}")
+    else()
+        list(APPEND _DEVICE_COMPILE_OPTS "${_f}")
+    endif()
+endforeach()
+
 set(_COMPILE_DEFS
-    ${BF_DEVICE_FLAGS}
+    ${_DEVICE_DEFS}
+    ${BF_TARGET_MK_DEVICE_FLAGS}
     "-DTARGET_FLASH_SIZE=${BF_TARGET_FLASH_SIZE}"
     "-D${BF_TARGET}"
     "-D${BF_TARGET_PLATFORM}"
@@ -327,6 +387,7 @@ endif()
 
 target_compile_options(${_ELF_NAME} PRIVATE
     ${BF_ARCH_FLAGS}
+    ${_DEVICE_COMPILE_OPTS}
     -std=gnu17
     -Wall -Wextra -Werror
     -Wunsafe-loop-optimizations
@@ -374,10 +435,17 @@ foreach(_src ${BF_ALL_SRCS})
         set(_opt_flags ${_CC_DEFAULT})
     endif()
 
-    # Suppress warnings for device library files
+    # Suppress warnings for device library files; optionally strip LTO
+    # (e.g. pico-sdk --wrap= interop requires -fno-lto on device lib files)
     if(_src IN_LIST _DEVLIB_SET)
-        set_source_files_properties("${_src}" PROPERTIES
-            COMPILE_OPTIONS "${_opt_flags};-w")
+        if(BF_DEVICE_LIB_NO_LTO)
+            string(REPLACE "-flto=auto" "-fno-lto" _opt_flags_nolto "${_opt_flags}")
+            set_source_files_properties("${_src}" PROPERTIES
+                COMPILE_OPTIONS "${_opt_flags_nolto};-w")
+        else()
+            set_source_files_properties("${_src}" PROPERTIES
+                COMPILE_OPTIONS "${_opt_flags};-w")
+        endif()
     else()
         set_source_files_properties("${_src}" PROPERTIES
             COMPILE_OPTIONS "${_opt_flags}")
@@ -413,6 +481,11 @@ target_link_libraries(${_ELF_NAME} PRIVATE -lm -lc -lnosys)
 foreach(_ld ${BF_LD_SCRIPTS})
     target_link_options(${_ELF_NAME} PRIVATE "-T${_ld}")
 endforeach()
+
+# Platform-specific extra linker flags (e.g. RP2350 --wrap= flags)
+if(BF_EXTRA_LD_FLAGS)
+    target_link_options(${_ELF_NAME} PRIVATE ${BF_EXTRA_LD_FLAGS})
+endif()
 
 # ---------------------------------------------------------------------------
 # Post-build: print size
