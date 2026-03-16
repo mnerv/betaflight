@@ -1,9 +1,9 @@
 # cmake/build_all.cmake
 #
 # Builds all Betaflight board configs (or base MCU targets) in three phases:
-#   1. Configure  — cmake -S/-B -GNinja  (parallel, lightweight)
-#   2. Compile    — ninja object files   (parallel, CPU-saturating)
-#   3. Link       — ninja final link     (parallel, limited — LTO is memory-hungry)
+#   1. Configure  - cmake -S/-B -GNinja  (parallel, lightweight)
+#   2. Compile    - ninja object files   (parallel, CPU-saturating)
+#   3. Link       - ninja final link     (parallel, limited - LTO is memory-hungry)
 #
 # Invoke from the repo root:
 #   cmake -P cmake/build_all.cmake
@@ -26,7 +26,7 @@ if(NOT _NCPU OR _NCPU LESS 1)
     set(_NCPU 4)
 endif()
 
-# One slot per logical core — no artificial cap.
+# One slot per logical core - no artificial cap.
 # Total concurrent processes = PARALLEL_TARGETS * JOBS_PER_TARGET = _NCPU * 1 = _NCPU.
 if(NOT DEFINED PARALLEL_TARGETS)
     set(PARALLEL_TARGETS ${_NCPU})
@@ -135,7 +135,7 @@ macro(bf_ninja_phase NF_VAR PARALLELISM STAMP_SUFFIX)
 endmacro()
 
 # ---------------------------------------------------------------------------
-# Phase 1 — Configure
+# Phase 1 - Configure
 # ---------------------------------------------------------------------------
 set(_PHASE_ITEMS ${_ITEMS})
 
@@ -153,7 +153,7 @@ execute_process(
     RESULT_VARIABLE _r OUTPUT_FILE \"${_log}\" ERROR_FILE \"${_log}\"
 )
 if(NOT _r EQUAL 0)
-    message(FATAL_ERROR \"Configure failed for ${_item} — see ${_log}\")
+    message(FATAL_ERROR \"Configure failed for ${_item} - see ${_log}\")
 endif()
 file(TOUCH \"${_stamp}\")
 message(STATUS \"CFG  ${_item}\")
@@ -182,12 +182,12 @@ if(_PHASE_FAILED)
     foreach(_f ${_PHASE_FAILED})
         message(STATUS "  FAIL  ${_f}  ->  ${BUILD_DIR}/${_f}/configure.log")
     endforeach()
-    message(FATAL_ERROR "Configure phase failed — aborting.")
+    message(FATAL_ERROR "Configure phase failed - aborting.")
 endif()
 message(STATUS "")
 
 # ---------------------------------------------------------------------------
-# Phase 2 — Compile (object files only, no link)
+# Phase 2 - Compile (object files only, no link)
 #
 # Each per-target script asks ninja for its object-file targets, writes a
 # compile_only.ninja wrapper (avoids Windows cmd-line length limits when
@@ -229,7 +229,7 @@ execute_process(
     RESULT_VARIABLE _r OUTPUT_FILE \"${_log}\" ERROR_FILE \"${_log}\"
 )
 if(NOT _r EQUAL 0)
-    message(FATAL_ERROR \"Compile failed for ${_item} — see ${_log}\")
+    message(FATAL_ERROR \"Compile failed for ${_item} - see ${_log}\")
 endif()
 file(TOUCH \"${_stamp}\")
 message(STATUS \"COMP ${_item}\")
@@ -260,12 +260,12 @@ if(_COMP_FAILED)
     foreach(_f ${_COMP_FAILED})
         message(STATUS "  FAIL  ${_f}  ->  ${BUILD_DIR}/${_f}/compile.log")
     endforeach()
-    message(FATAL_ERROR "Compile phase failed — aborting before link.")
+    message(FATAL_ERROR "Compile phase failed - aborting before link.")
 endif()
 message(STATUS "")
 
 # ---------------------------------------------------------------------------
-# Phase 3 — Link
+# Phase 3 - Link
 #
 # All object files are already built.  cmake --build just invokes the linker.
 # Throttled to LINK_PARALLELISM to avoid running too many LTO linkers at once.
@@ -282,7 +282,7 @@ foreach(_item ${_ITEMS})
     RESULT_VARIABLE _r OUTPUT_FILE \"${_log}\" ERROR_FILE \"${_log}\"
 )
 if(NOT _r EQUAL 0)
-    message(FATAL_ERROR \"Link failed for ${_item} — see ${_log}\")
+    message(FATAL_ERROR \"Link failed for ${_item} - see ${_log}\")
 endif()
 file(TOUCH \"${_stamp}\")
 message(STATUS \"LINK ${_item}\")
