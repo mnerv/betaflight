@@ -69,4 +69,4 @@ CLAUDE.md
 
 .cache
 .tools
-build*
+build*/

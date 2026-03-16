@@ -33,14 +33,15 @@ set(_URL          "https://developer.arm.com/-/media/Files/downloads/gnu/${TOOLC
 set(_SUBDIR_ROOT  "${TOOLCHAIN_ROOT}/${_ARCH_STEM}")   # layout after a fresh download
 set(_GCC_EXE      "${TOOLCHAIN_PREFIX}-gcc${CMAKE_HOST_EXECUTABLE_SUFFIX}")
 
-# Prefer a flat install (.tools/bin/) that the user may have set up manually,
-# then fall back to the subdirectory layout that a fresh download produces.
-if(EXISTS "${TOOLCHAIN_ROOT}/bin/${_GCC_EXE}")
-    set(TOOLCHAIN_BIN_DIR "${TOOLCHAIN_ROOT}/bin")
-    set(_SYSROOT          "${TOOLCHAIN_ROOT}")
-elseif(EXISTS "${_SUBDIR_ROOT}/bin/${_GCC_EXE}")
+# Prefer the versioned subdirectory layout produced by a download (guarantees
+# the correct version is used).  Fall back to a flat install only if the
+# versioned layout is absent.
+if(EXISTS "${_SUBDIR_ROOT}/bin/${_GCC_EXE}")
     set(TOOLCHAIN_BIN_DIR "${_SUBDIR_ROOT}/bin")
     set(_SYSROOT          "${_SUBDIR_ROOT}")
+elseif(EXISTS "${TOOLCHAIN_ROOT}/bin/${_GCC_EXE}")
+    set(TOOLCHAIN_BIN_DIR "${TOOLCHAIN_ROOT}/bin")
+    set(_SYSROOT          "${TOOLCHAIN_ROOT}")
 else()
     # Neither layout found — download and extract
     message(STATUS "ARM GNU toolchain not found — downloading v${TOOLCHAIN_VERSION}...")
