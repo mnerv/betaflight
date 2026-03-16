@@ -1,0 +1,124 @@
+{
+  "version": 6,
+  "cmakeMinimumRequired": { "major": 3, "minor": 25, "patch": 0 },
+
+  "configurePresets": [
+    {
+      "name": "base",
+      "hidden": true,
+      "generator": "Ninja",
+      "toolchainFile": "${sourceDir}/cmake/arm-none-eabi-toolchain.cmake",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "cacheVariables": {
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      }
+    },
+
+    {
+      "name": "stm32f405",
+      "displayName": "STM32F405 (Cortex-M4)",
+      "inherits": "base",
+      "cacheVariables": { "BF_TARGET": "STM32F405" }
+    },
+    {
+      "name": "stm32f411",
+      "displayName": "STM32F411 (Cortex-M4, 512 KB)",
+      "inherits": "base",
+      "cacheVariables": { "BF_TARGET": "STM32F411" }
+    },
+    {
+      "name": "stm32f446",
+      "displayName": "STM32F446 (Cortex-M4, 512 KB)",
+      "inherits": "base",
+      "cacheVariables": { "BF_TARGET": "STM32F446" }
+    },
+    {
+      "name": "stm32f745",
+      "displayName": "STM32F745 (Cortex-M7)",
+      "inherits": "base",
+      "cacheVariables": { "BF_TARGET": "STM32F745" }
+    },
+    {
+      "name": "stm32f7x2",
+      "displayName": "STM32F7X2 / F722 (Cortex-M7, 512 KB)",
+      "inherits": "base",
+      "cacheVariables": { "BF_TARGET": "STM32F7X2" }
+    },
+    {
+      "name": "stm32g47x",
+      "displayName": "STM32G47X / G474 (Cortex-M4)",
+      "inherits": "base",
+      "cacheVariables": { "BF_TARGET": "STM32G47X" }
+    },
+    {
+      "name": "stm32h563",
+      "displayName": "STM32H563 (Cortex-M7, 2 MB)",
+      "inherits": "base",
+      "cacheVariables": { "BF_TARGET": "STM32H563" }
+    },
+    {
+      "name": "stm32h743",
+      "displayName": "STM32H743 (Cortex-M7, 2 MB)",
+      "inherits": "base",
+      "cacheVariables": { "BF_TARGET": "STM32H743" }
+    },
+    {
+      "name": "stm32h750",
+      "displayName": "STM32H750 (Cortex-M7, EXST)",
+      "inherits": "base",
+      "cacheVariables": {
+        "BF_TARGET": "STM32H750",
+        "BF_EXST":   "ON"
+      }
+    },
+    {
+      "name": "stm32h723",
+      "displayName": "STM32H723 (Cortex-M7, 1 MB)",
+      "inherits": "base",
+      "cacheVariables": { "BF_TARGET": "STM32H723" }
+    },
+
+    {
+      "name": "matekf405te",
+      "displayName": "MATEK F405-TE board config",
+      "inherits": "base",
+      "cacheVariables": { "BF_CONFIG": "MATEKF405TE" }
+    },
+    {
+      "name": "kakuteh7",
+      "displayName": "Kakute H7 board config",
+      "inherits": "base",
+      "cacheVariables": { "BF_CONFIG": "KAKUTEH7" }
+    },
+
+    {
+      "name": "stm32f405-debug",
+      "displayName": "STM32F405 (GDB debug build)",
+      "inherits": "stm32f405",
+      "cacheVariables": { "BF_DEBUG": "GDB" }
+    },
+    {
+      "name": "stm32h743-debug",
+      "displayName": "STM32H743 (GDB debug build)",
+      "inherits": "stm32h743",
+      "cacheVariables": { "BF_DEBUG": "GDB" }
+    }
+  ],
+
+  "buildPresets": [
+    { "name": "stm32f405",       "configurePreset": "stm32f405" },
+    { "name": "stm32f411",       "configurePreset": "stm32f411" },
+    { "name": "stm32f446",       "configurePreset": "stm32f446" },
+    { "name": "stm32f745",       "configurePreset": "stm32f745" },
+    { "name": "stm32f7x2",       "configurePreset": "stm32f7x2" },
+    { "name": "stm32g47x",       "configurePreset": "stm32g47x" },
+    { "name": "stm32h563",       "configurePreset": "stm32h563" },
+    { "name": "stm32h743",       "configurePreset": "stm32h743" },
+    { "name": "stm32h750",       "configurePreset": "stm32h750" },
+    { "name": "stm32h723",       "configurePreset": "stm32h723" },
+    { "name": "matekf405te",     "configurePreset": "matekf405te" },
+    { "name": "kakuteh7",        "configurePreset": "kakuteh7" },
+    { "name": "stm32f405-debug", "configurePreset": "stm32f405-debug" },
+    { "name": "stm32h743-debug", "configurePreset": "stm32h743-debug" }
+  ]
+}

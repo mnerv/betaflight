@@ -393,11 +393,8 @@ target_link_options(${_ELF_NAME} PRIVATE
     ${BF_ARCH_FLAGS}
     ${_LTO_FLAGS}
     ${_DEBUG_FLAGS}
-    -lm
     -nostartfiles
     "SHELL:--specs=nano.specs"
-    -lc
-    -lnosys
     -static
     "SHELL:-Wl,-gc-sections,--Map=${_MAP_FILE}"
     "SHELL:-Wl,-L${BF_PLATFORM_DIR}/${BF_TARGET_PLATFORM}/link"
@@ -406,6 +403,11 @@ target_link_options(${_ELF_NAME} PRIVATE
     "SHELL:-Wl,--print-memory-usage"
     "-T${BF_LD_SCRIPT}"
 )
+
+# -lm / -lc / -lnosys must come AFTER object files so the linker can resolve
+# _sbrk (from -lnosys) when nano.specs pulls in libc_nano at the very end.
+# target_link_libraries() places these after @rsp; target_link_options() would not.
+target_link_libraries(${_ELF_NAME} PRIVATE -lm -lc -lnosys)
 
 # Additional linker scripts (e.g. EXST common/post scripts for H7)
 foreach(_ld ${BF_LD_SCRIPTS})
