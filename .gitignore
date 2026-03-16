@@ -48,7 +48,6 @@ stm32.mak
 
 # artefacts for CLion
 /cmake-build-debug/
-/CMakeLists.txt
 
 .vagrant
 ubuntu*.log
@@ -66,3 +65,8 @@ eeprom.bin
 AGENTS.md
 CLAUDE.md
 /tasks
+.claude
+
+.cache
+.tools
+build*
