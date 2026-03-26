@@ -134,7 +134,7 @@ _bf_srcdir_prefix(BF_COMMON_SRCS
     drivers/camera_control.c
     drivers/display.c
     drivers/display_canvas.c
-    drivers/dma_common.c
+    drivers/dma.c
     drivers/io.c
     drivers/io_preinit.c
     drivers/light_led.c
@@ -205,6 +205,8 @@ _bf_srcdir_prefix(BF_COMMON_SRCS
     flight/pid.c
     flight/pid_init.c
     flight/position.c
+    flight/position_estimator.c
+    flight/position_filter.c
     flight/pos_hold_multirotor.c
     flight/pos_hold_wing.c
     flight/rpm_filter.c
@@ -244,6 +246,7 @@ _bf_srcdir_prefix(BF_COMMON_SRCS
     sensors/gyro.c
     sensors/gyro_init.c
     sensors/initialisation.c
+    sensors/sensors.c
     blackbox/blackbox.c
     blackbox/blackbox_encoding.c
     blackbox/blackbox_io.c
@@ -274,6 +277,7 @@ _bf_srcdir_prefix(BF_COMMON_SRCS
     drivers/rangefinder/rangefinder_lidartf.c
     drivers/rangefinder/rangefinder_lidarmt.c
     drivers/rangefinder/rangefinder_nooploop.c
+    drivers/rangefinder/rangefinder_upt1.c
     drivers/vtx_common.c
     drivers/vtx_table.c
     io/dashboard.c
@@ -292,6 +296,7 @@ _bf_srcdir_prefix(BF_COMMON_SRCS
     io/ledstrip.c
     io/pidaudio.c
     osd/osd.c
+    osd/osd_custom_text.c
     osd/osd_elements.c
     osd/osd_warnings.c
     sensors/barometer.c

@@ -20,6 +20,9 @@
 
 #pragma once
 
+#include <stdbool.h>
+#include <stdint.h>
+
 #define VIDEO_COLUMNS_SD          30
 #define VIDEO_LINES_NTSC          13
 #define VIDEO_LINES_PAL           16
